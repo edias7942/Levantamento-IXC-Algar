@@ -1,2 +1,3 @@
 /nodejs/node_modules/
-/python/secrets.py
+/python/secrets_variables.py
+/python/__pycache__

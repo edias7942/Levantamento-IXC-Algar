@@ -13,11 +13,15 @@ class olt_connection:
     def start_conn(self):
         self.tn = telnetlib.Telnet()
         self.tn.open(self.ip, "23", 100)
-        self.tn.read_until(":".encode())
+        print(self.tn.read_until("name:".encode()))
         self.tn.write((self.usuario + "\n").encode())
-        self.tn.read_until(b":")
+        print(self.tn.read_until(b":"))
         self.tn.write((self.senha + "\n").encode())
-        self.tn.read_until(b"#").decode()
+        print(self.tn.read_until(b">").decode())
+        print(self.tn.read_until(b">").decode())
+
+        self.tn.write("enable\n".encode())
+        print(self.tn.read_until(b"#").decode())
 
         return self
 

@@ -1,30 +1,23 @@
 from onu_commands.show_gpon_onu_detail_info import show_gpon_onu_detail_info
 from onu_commands.show_gpon_onu_baseinfo import show_gpon_onu_baseinfo
+from secrets_variables import oltAccessInfo
 from olt_connection import olt_connection
 
-from typing import TypedDict
-import sys
-import sqlite3
-
-
 from openpyxl import load_workbook
+from typing import TypedDict
+import sqlite3
+import sys
+
 
 # Abrindo Conexão com o Banco de Dados
 conn = sqlite3.connect("./database.db")
 cursor = conn.cursor()
 
 # Conectando com a OLT
-oltAccessInfo = {
-    "ip": "10.40.150.6",
-    "usuario": "smartolt",
-    "senha": "kwRed5@lirft+",
-}
 connection = olt_connection(oltAccessInfo)
 
 # Requisitando informações da OLT
-olt_id = 1
-board_id = 12
-pon_id = 1
+olt_id, board_id = 1, 1
 
 # Abrindo Planilha
 sheet_file_path = "informacoes-algar.xlsx"
@@ -66,8 +59,8 @@ def get_database_info(
 
 
 while board_id <= 17:
-    pon_id = 10
-    boards = [2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 14, 15, 16, 17]
+    pon_id = 1
+    boards = [1, 2]
     if not board_id in boards:
         board_id += 1
         continue
@@ -85,7 +78,7 @@ while board_id <= 17:
             espaços = " " * (tamanho - len(barra))
             percent = int(progresso * 100)
             sys.stdout.write(
-                f"\r[{barra}{espaços}] {percent}% {progressado}/{total}    "
+                f"\r| {barra}{espaços} | {percent}% {progressado}/{total}    "
             )
             sys.stdout.flush()
             if total == progressado:
@@ -151,7 +144,7 @@ while board_id <= 17:
                 nome_cliente,
                 contrato_cliente,
                 oltAccessInfo["ip"],
-                "ZXA10 C600",
+                "ZXA10 C650",
                 "Hibryd",
                 "1",
                 item["board_id"],
@@ -160,7 +153,7 @@ while board_id <= 17:
                 item["onu_type"],
                 item["sn"],
                 item["onu_id"],
-                "FRANQUEADOR",
+                "FRANQUEADO",
             ]
 
             sheet.append(sheet_line)
