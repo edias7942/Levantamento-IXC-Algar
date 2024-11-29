@@ -2,6 +2,7 @@ from onu_commands.show_gpon_onu_detail_info import show_gpon_onu_detail_info
 from onu_commands.show_gpon_onu_baseinfo import show_gpon_onu_baseinfo
 from secrets_variables import oltAccessInfo
 from olt_connection import olt_connection
+from database import get_database_info, QueryDatabase
 
 from openpyxl import load_workbook
 from typing import TypedDict
@@ -17,50 +18,33 @@ cursor = conn.cursor()
 connection = olt_connection(oltAccessInfo)
 
 # Requisitando informações da OLT
-olt_id, board_id = 1, 1
+olt_id, board_id = 0, 0
 
-# Abrindo Planilha
-sheet_file_path = "informacoes-algar.xlsx"
-workbook = load_workbook(sheet_file_path)
+# Abrindo Planilha Modelo
+sheet_file_model = "./sheets/informacoes-algar-modelo.xlsx"
+sheet_file_save = "./sheets/informacoes-algar-HUAWEI-CAETANO-ALVARES.xlsx"
+workbook = load_workbook(sheet_file_model)
 sheet = workbook.active
 
 
-class QueryDatabase(TypedDict):
-    """
-    Dict para requisição no Banco de Dados.
-
-    Attributes:
-        columns: str - Colunas a serem retornadas. ex: 'id_cliente, login'
-        table: str - Tabela para a requisção. ex: 'clientes'
-        where: str - Condição para a requisição. ex: 'id = 1'
-    """
-
-    columns: str
-    table: str
-    where: str
-
-
-def get_database_info(
-    query_obj: dict = {
-        "columns": "column1, column2",
-        "table": "clientes",
-        "where": "id = '1'",
-    }
-):
-    query = f"SELECT {query_obj["columns"]} FROM {query_obj["table"]} WHERE {query_obj["where"]}"
-    cursor.execute(query)
-
-    try:
-        result = cursor.fetchall()[0]
-    except:
-        result = ["", ""]
-
-    return result
+def barra_progresso(total, progressado, tamanho=50):
+    progresso = progressado / total
+    barra = "█" * int(progresso * tamanho)
+    espaços = " " * (tamanho - len(barra))
+    percent = int(progresso * 100)
+    sys.stdout.write(
+        f"\r| {barra}{espaços} | {percent}% {progressado}/{total}    "
+    )
+    sys.stdout.flush()
+    if total == progressado:
+        print(
+            f"\n\033[32mPON {olt_id}/{board_id}/{pon_id} Concluída - {pon_id} de 16\033[37m\n"
+        )
 
 
 while board_id <= 17:
-    pon_id = 1
-    boards = [1, 2]
+    pon_id = 0
+    boards = [0, 2]
     if not board_id in boards:
         board_id += 1
         continue
@@ -71,20 +55,6 @@ while board_id <= 17:
     while pon_id <= 16:
         # print(f"GETTING {olt_id}/{board_id}/{pon_id}")
         result = show_gpon_onu_baseinfo(connection, olt_id, board_id, pon_id)
-
-        def barra_progresso(total, progressado, tamanho=50):
-            progresso = progressado / total
-            barra = "█" * int(progresso * tamanho)
-            espaços = " " * (tamanho - len(barra))
-            percent = int(progresso * 100)
-            sys.stdout.write(
-                f"\r| {barra}{espaços} | {percent}% {progressado}/{total}    "
-            )
-            sys.stdout.flush()
-            if total == progressado:
-                print(
-                    f"\n\033[32mPON {olt_id}/{board_id}/{pon_id} Concluída - {pon_id} de 16\033[37m\n"
-                )
 
         # Exemplo de array de clientes
         clientes = ["Cliente {}".format(i) for i in range(1, 251)]  # 250 clientes
@@ -159,6 +129,6 @@ while board_id <= 17:
             sheet.append(sheet_line)
 
         pon_id += 1
-        workbook.save(sheet_file_path)
+        workbook.save(sheet_file_save)
 
     board_id += 1
